@@ -1,14 +1,10 @@
-// Importing the required components
 import Board from "./Board";
 import Info from "./Info";
 import NameInput from "./NameInput";
-// Importing the CSS File
 import "./css/app.css";
-
-// Importing the useState hook
 import { useEffect, useState } from "react";
 
-function App() {  
+function App() {
   const [reset, setReset] = useState(false);
   const [winner, setWinner] = useState("");
   const [namesEntered, setNamesEntered] = useState(false);
@@ -19,26 +15,51 @@ function App() {
     setReset(true);
   };
 
-   const handleNameOneSubmit = (name) => {
-     if (name !== ''){
+  const handleNameOneSubmit = (name) => {
+    if (name !== "") {
       setn1(name);
       console.log("received: " + name);
-     }     
-   };
-    const handleNameTwoSubmit = (name) => {
-       if (name !== "") {
-         setn2(name);
-         console.log("received in n2: " + name);
-       }  
-    };
+    }
+  };
+  const handleNameTwoSubmit = (name) => {
+    if (name !== "") {
+      setn2(name);
+      console.log("received in n2: " + name);
+    }
+  };
+  useEffect(() => {
+    
+  }, [winner])
 
-    useEffect(() =>{
-      // console.log('value of n1: ' + n1)
-      // console.log("value of n2: " + n2);
-      if (n1 && n2){
-        setNamesEntered(true);
-      }
-    }, [n1, n2])
+  useEffect(() => {
+    if (n1 && n2) {
+      setNamesEntered(true);      
+      submitPlayerNames();
+    }
+  }, [n1, n2]);
+
+ const submitPlayerNames = async () => {
+   try {
+     const response = await fetch("http://localhost:3000/player-names", {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify({ n1, n2 }), // Assuming n1 and n2 are state variables
+     });
+
+     if (!response.ok) {
+       throw new Error(`HTTP error! Status: ${response.status}`);
+     }
+
+     const data = await response.json(); // Assuming the response is in JSON format
+     console.log("Data:", data);
+   } catch (error) {
+     console.error("Error:", error);
+   }
+ };
+ 
+
 
   return (
     <div className="App">
@@ -56,7 +77,7 @@ function App() {
             name1={n1}
             name2={n2}
           />
-          <Info name1={n1} name2={n2} />
+          <Info name1={n1} name2={n2} />         
         </>
       ) : (
         <NameInput
