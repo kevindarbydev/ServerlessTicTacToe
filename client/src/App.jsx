@@ -28,38 +28,62 @@ function App() {
     }
   };
   useEffect(() => {
-    
-  }, [winner])
+    if (winner) {
+      sendWinner();
+    }
+  }, [winner]);
 
   useEffect(() => {
     if (n1 && n2) {
-      setNamesEntered(true);      
+      setNamesEntered(true);
       submitPlayerNames();
     }
   }, [n1, n2]);
 
- const submitPlayerNames = async () => {
-   try {
-     const response = await fetch("http://localhost:3000/player-names", {
-       method: "POST",
-       headers: {
-         "Content-Type": "application/json",
-       },
-       body: JSON.stringify({ n1, n2 }), // Assuming n1 and n2 are state variables
-     });
+  const submitPlayerNames = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ n1, n2 }),
+      });
 
-     if (!response.ok) {
-       throw new Error(`HTTP error! Status: ${response.status}`);
-     }
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Data:", data);
+      console.log("Setting this in storage : " + data?.GAME_ID);
+      localStorage.setItem("GameId", data?.GAME_ID);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+  const sendWinner = async () => {
+    try {
+      const gameId = localStorage.getItem("GameId");
+      console.log("Game ID: " + gameId);
 
-     const data = await response.json(); // Assuming the response is in JSON format
-     console.log("Data:", data);
-   } catch (error) {
-     console.error("Error:", error);
-   }
- };
- 
+      const res = await fetch("http://localhost:3000/game-winner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ winner, gameId }),
+      });
 
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+      const data = await res.json();
+
+      localStorage.setItem("GameId", data?.GAME_ID);
+    } catch (err) {
+      console.log("Error :" + err);
+    }
+  };
 
   return (
     <div className="App">
@@ -77,7 +101,7 @@ function App() {
             name1={n1}
             name2={n2}
           />
-          <Info name1={n1} name2={n2} />         
+          <Info name1={n1} name2={n2} />
         </>
       ) : (
         <NameInput
